@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3f51b5</color>
+    <color name="colorPrimaryDark">#6e006b86</color>
+    <color name="colorAccent">#404fda</color>
+    <color name="btnBack">#00ffffff</color>
+    <color name="postback">#fcf9e8</color>
+    <color name="postadd">#eae7d4</color>
+    <color name="HintColor">#78ffffff</color>
+    <color name="textcolor">#000000</color>
+</resources>

@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">FrSamuelV1.3</string>
+    <string name="homebtn">المنشورات</string>
+    <string name="inboxbtn">الرسائل</string>
+    <string name="main_menu_sett">الاعدادات</string>
+    <string name="main_menu_exit">خروج</string>
+    <string name="welcome_login">اهلا بكم</string>
+    <string name="email_login">البريد الإلكترونى</string>
+    <string name="psw_login">كلمة المرور</string>
+    <string name="log_login">دخول</string>
+    <string name="reg_login">تسجيل</string>
+    <string name="name_reg">الأسم</string>
+    <string name="phone_reg">رقم الهاتف</string>
+    <string name="psw_reg">تأكيد كلمة المرور</string>
+    <string name="address_reg">العناون</string>
+    <string name="verify_reg">كود التعريف</string>
+
+</resources>
