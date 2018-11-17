@@ -30,6 +30,7 @@ import java.util.Map;
 public class PostsRecycleAdapter extends RecyclerView.Adapter<PostsRecycleAdapter.ViewHolder>{
     private FirebaseAuth mAuth;
     private FirebaseFirestore mFire;
+    private String admin_id;
 
     public Context context;
     public List<Posts> post_List_data;
@@ -121,13 +122,37 @@ public class PostsRecycleAdapter extends RecyclerView.Adapter<PostsRecycleAdapte
 
 
             }
-        });}
+        });
+
+            mFire.collection("Posts/" + postID + "/Comments").addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
+                    if(!documentSnapshots.isEmpty())
+                    {
+                        int count = documentSnapshots.size();
+                        viewHolder.setPostCommentcounter(count);
+                    }else{
+                        viewHolder.setPostCommentcounter(0);
+                    }
+                }
+            });}
 
         if(user_id != null){
+            mFire.collection("Verify").document("Admin").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if(task.isSuccessful()){
+                        if(task.getResult().exists()){
+                            admin_id = task.getResult().getString("code");
+                        }
+                    }
+                }
+            });
+
                viewHolder.postDeletebtn.setOnClickListener(new View.OnClickListener(){
                    @Override
                    public void onClick(View v){
-                       if(nameView .equals(user_id)){
+                       if(nameView .equals(user_id) || user_id.equals(admin_id)){
                            mFire.collection("Posts").document(postID).delete();
                            Toast.makeText(context, "تم مسحه", Toast.LENGTH_SHORT).show();
                            ((HomeActivity)context).finish();
@@ -141,7 +166,21 @@ public class PostsRecycleAdapter extends RecyclerView.Adapter<PostsRecycleAdapte
 
 
         }
+        if(user_id !=  null){
+        viewHolder.postCommentbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent comment = new Intent(context, CommentActivity.class);
+                comment.putExtra("postID",postID);
+                comment.putExtra("userName",viewHolder.getNmae());
+                context.startActivity(comment);
+            }
+        });
+        }
+
+
     }
+
 
     public void setHolder(ViewHolder holder, String postView, String name, String date)
     {
@@ -164,6 +203,8 @@ public class PostsRecycleAdapter extends RecyclerView.Adapter<PostsRecycleAdapte
         private ImageView postLikebtn;
         private ImageView postDeletebtn;
         private TextView postLikecounter;
+        private ImageView postCommentbtn;
+        private TextView postCommentcounter;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -171,6 +212,10 @@ public class PostsRecycleAdapter extends RecyclerView.Adapter<PostsRecycleAdapte
 
             postLikebtn = mView.findViewById(R.id.Like_Btn);
             postDeletebtn = mView.findViewById(R.id.delete_post_btn);
+            postCommentbtn = mView.findViewById(R.id.Comment_Btn);
+        }
+        public String getNmae(){
+            return user_id.getText().toString();
         }
 
         public void setpostText(String text){
@@ -192,6 +237,11 @@ public class PostsRecycleAdapter extends RecyclerView.Adapter<PostsRecycleAdapte
         public void setlikecount(int count){
             postLikecounter = mView.findViewById(R.id.like_counter);
             postLikecounter.setText(count + "Likes");
+        }
+
+        public void setPostCommentcounter(int count){
+            postCommentcounter = mView.findViewById(R.id.comment_counter);
+            postCommentcounter.setText(String.valueOf(count));
         }
     }
 }

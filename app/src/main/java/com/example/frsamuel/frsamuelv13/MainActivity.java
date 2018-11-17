@@ -1,6 +1,7 @@
 package com.example.frsamuel.frsamuelv13;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -10,7 +11,10 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import io.fabric.sdk.android.Fabric;
 
@@ -20,10 +24,12 @@ public class MainActivity extends AppCompatActivity {
 
     private Button homeBtn;
     private Button inboxBtn;
+    private Button userBtn;
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore mFire;
 
+    private String admin_id;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,12 +44,28 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("لنتواصل");
         homeBtn = findViewById(R.id.homeBTN);
         inboxBtn = findViewById(R.id.inboxBTN);
+        userBtn = findViewById(R.id.userBtn);
+        userBtn.setVisibility(View.INVISIBLE);
 
         if(mAuth.getCurrentUser() == null)
         {
             sendToLogin();
         }
 
+        mFire.collection("Verify").document("Admin").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful()){
+                    if(task.getResult().exists()){
+                        admin_id = task.getResult().getString("code");
+                        if(mAuth.getCurrentUser().getUid().equals(admin_id)){
+
+                            userBtn.setVisibility(View.VISIBLE);
+                        }
+                    }
+                }
+            }
+        });
         homeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -58,6 +80,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        userBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this,UsersActivity.class));
+            }
+        });
     }
 
 
@@ -73,6 +101,9 @@ public class MainActivity extends AppCompatActivity {
     {
         switch (item.getItemId())
         {
+            case R.id.action_setting:
+                startActivity(new Intent(MainActivity.this, SetupActivity.class));
+                return true;
             case R.id.action_logout:
                 logOut();
                 return true;

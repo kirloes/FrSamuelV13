@@ -14,5 +14,6 @@
     <string name="psw_reg">تأكيد كلمة المرور</string>
     <string name="address_reg">العناون</string>
     <string name="verify_reg">كود التعريف</string>
-
+    <string name="setup_save">حفظ</string>
+    <string name="users">الأعضاء</string>
 </resources>
