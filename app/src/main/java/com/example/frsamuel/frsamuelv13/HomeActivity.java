@@ -36,13 +36,12 @@ public class HomeActivity extends AppCompatActivity {
 
     private EditText postText;
     private Button AddPostBtn;
-
     private RecyclerView postList;
     private List<Posts> post_List_data;
     private PostsRecycleAdapter postAdap;
     private Boolean firstPage = true;
     private DocumentSnapshot lastVisible;
-
+    private int counter;
     private FirebaseAuth mAuth;
     private FirebaseFirestore firebasefirestor;
 
@@ -50,7 +49,7 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
+        counter = 0;
         mAuth = FirebaseAuth.getInstance();
         firebasefirestor = FirebaseFirestore.getInstance();
         postText =  findViewById(R.id.textPost);
@@ -90,13 +89,16 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        firstPage = true;
-        post_List_data = new ArrayList<>();
-        postList = findViewById(R.id.Post_view);
-        postAdap = new PostsRecycleAdapter(post_List_data);
-        postList.setLayoutManager(new LinearLayoutManager(this));
-        postList.setAdapter(postAdap);
-
+        counter++;
+        if(counter == 1) {
+            firstPage = true;
+            post_List_data = new ArrayList<>();
+            postList = findViewById(R.id.Post_view);
+            postAdap = new PostsRecycleAdapter(post_List_data);
+            postList.setLayoutManager(new LinearLayoutManager(this));
+            postList.setAdapter(postAdap);
+            firstLoad();
+        }
         postList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
@@ -109,7 +111,9 @@ public class HomeActivity extends AppCompatActivity {
                 }
             }
         });
-        firstLoad();
+        Toast.makeText(this, "on start", Toast.LENGTH_SHORT).show();
+
+
     }
 
     public void firstLoad(){
@@ -169,6 +173,9 @@ public class HomeActivity extends AppCompatActivity {
                             if(postID.isEmpty()){
                                 continue;
                             }
+                            if(postID.equals(post_List_data.get(post_List_data.size() - 1).getUser_id())){
+                                continue;
+                            }
                             Posts post = doc.getDocument().toObject(Posts.class).withID(postID);
                             if(post.getTime() == null){
                                 continue;
@@ -180,4 +187,6 @@ public class HomeActivity extends AppCompatActivity {
                 }}
         });
     }
+
+
 }

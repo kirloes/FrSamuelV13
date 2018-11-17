@@ -80,22 +80,27 @@ public class LoginActivity extends AppCompatActivity {
         if(!TextUtils.isEmpty(loginEmail) && !TextUtils.isEmpty(loginPsw))
         {
             LoginProg.setVisibility(View.VISIBLE);
-            mAuth.signInWithEmailAndPassword(loginEmail,loginPsw).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
-                    if(task.isSuccessful()){
-                        sendToMain();
-                    }else{
-                        String errorMSG = task.getException().getMessage();
-                        Toast.makeText(LoginActivity.this, "Error: "+ errorMSG, Toast.LENGTH_LONG).show();
-                        LoginProg.setVisibility(View.INVISIBLE);
+            try {
+                mAuth.signInWithEmailAndPassword(loginEmail, loginPsw).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            sendToMain();
+                        } else {
+                            String errorMSG = task.getException().getMessage();
+                            Toast.makeText(LoginActivity.this, "Error: " + errorMSG, Toast.LENGTH_LONG).show();
+                            LoginProg.setVisibility(View.INVISIBLE);
+                        }
                     }
-                }
-            });
+                });
+            }catch (Exception e){
+                Toast.makeText(LoginActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+            }
         }else{
+            LoginProg.setVisibility(View.INVISIBLE);
             Toast.makeText(LoginActivity.this, "ادخل البيانات", Toast.LENGTH_LONG).show();
         }
-        LoginProg.setVisibility(View.INVISIBLE);
+
     }
 
     public void Regmeth() {

@@ -18,7 +18,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        android:paddingRight="10dp">
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
@@ -34,7 +35,8 @@
                 android:textFontWeight="15dp"
                 android:textColor="@color/textcolor"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginRight="16dp" />
 
             <TextView
                 android:id="@+id/Date_ListView"
@@ -45,7 +47,8 @@
                 android:layout_marginEnd="32dp"
                 android:layout_marginTop="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/UserName_ListView" />
+                app:layout_constraintTop_toBottomOf="@+id/UserName_ListView"
+                android:layout_marginRight="32dp" />
 
             <EditText
                 android:id="@+id/PostText"
@@ -95,6 +98,38 @@
                 app:layout_constraintTop_toBottomOf="@+id/PostText"
                 app:layout_constraintVertical_bias="0.619" />
 
+            <ImageView
+                android:id="@+id/Comment_Btn"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="56dp"
+                android:layout_marginStart="56dp"
+                android:layout_marginTop="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/like_counter"
+                app:layout_constraintTop_toBottomOf="@+id/PostText"
+                app:layout_constraintVertical_bias="0.0"
+                app:srcCompat="@drawable/comment_action" />
+
+            <TextView
+                android:id="@+id/comment_counter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="84dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="84dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="20dp"
+                android:text="0"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/delete_post_btn"
+                app:layout_constraintHorizontal_bias="0.03"
+                app:layout_constraintStart_toEndOf="@+id/Comment_Btn"
+                app:layout_constraintTop_toBottomOf="@+id/PostText"
+                app:layout_constraintVertical_bias="0.111" />
+
             <ImageButton
                 android:id="@+id/delete_post_btn"
                 android:layout_width="32dp"
@@ -105,7 +140,8 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/PostText"
-                app:srcCompat="@drawable/delete_action" />
+                app:srcCompat="@drawable/delete_action"
+                android:layout_marginRight="16dp" />
 
         </android.support.constraint.ConstraintLayout>
     </android.support.v7.widget.CardView>
