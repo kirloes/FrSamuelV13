@@ -32,10 +32,9 @@ public class SetupActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseFirestore fbs;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_setup);
+    private boolean isLogged;
+
+    private void initialize(){
 
         setupToolbar = findViewById(R.id.setupToolbar);
         setSupportActionBar(setupToolbar);
@@ -50,66 +49,82 @@ public class SetupActivity extends AppCompatActivity {
         setupAddress = findViewById(R.id.setupAdress);
         setupSave = findViewById(R.id.setupsaveBtn);
 
-
+        isLogged = false;
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        final String user_id = mAuth.getCurrentUser().getUid();
-        if(user_id != null){
-            fbs.collection("Users").document(user_id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                    if(task.isSuccessful())
-                    {
-                        if(task.getResult().exists())
-                        {
-                            setupName.setText(task.getResult().getString("name").toString());
-                            setupAddress.setText(task.getResult().getString("address").toString());
-                            setupPhone.setText(task.getResult().getString("phone").toString());
-                        }
-                    }
-                }
-            });
+    private void loggedIn(){
+        if(mAuth.getCurrentUser() != null){
+            isLogged = true;
         }
         else{
             sendToLogin();
         }
 
-        setupSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final String Name =  setupName.getText().toString();
-                final String Phone = setupPhone.getText().toString();
-                final String Address = setupAddress.getText().toString();
+    }
 
-                if(!TextUtils.isEmpty(Name)&&!TextUtils.isEmpty(Phone)&&!TextUtils.isEmpty(Address)) {
-                        if (Phone.length() == 11) {
-                            Map<String, String> user = new HashMap<>();
-                            user.put("name", Name);
-                            user.put("phone", Phone);
-                            user.put("address", Address);
-                            fbs.collection("Users").document(user_id).set(user).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if (task.isSuccessful()) {
-                                        Toast.makeText(SetupActivity.this, "تم تحديث البيانات", Toast.LENGTH_SHORT).show();
-                                        finish();
-                                        } else {
-                                        String error = task.getException().getMessage();
-                                        Toast.makeText(SetupActivity.this, error, Toast.LENGTH_LONG).show();
-                                        }
-                                    }
-                            });
-                        }else{
-                            Toast.makeText(SetupActivity.this, "رقم الهاتف خطأ", Toast.LENGTH_LONG).show();
-                        }
+    private void loadData(){
+        if(isLogged && fbs != null){
+        fbs.collection("Users").document(mAuth.getCurrentUser().getUid()).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful())
+                {
+                    if(task.getResult().exists())
+                    {
+                        setupName.setText(task.getResult().getString("name").toString());
+                        setupAddress.setText(task.getResult().getString("address").toString());
+                        setupPhone.setText(task.getResult().getString("phone").toString());
+                    }
                 }
             }
         });
+        }
     }
 
+    private void saveData(){
+        final String Name =  setupName.getText().toString();
+        final String Phone = setupPhone.getText().toString();
+        final String Address = setupAddress.getText().toString();
+
+        if(!TextUtils.isEmpty(Name)&&!TextUtils.isEmpty(Phone)&&!TextUtils.isEmpty(Address)) {
+            if (Phone.length() == 11) {
+                Map<String, String> user = new HashMap<>();
+                user.put("name", Name);
+                user.put("phone", Phone);
+                user.put("address", Address);
+                fbs.collection("Users").document(mAuth.getCurrentUser().getUid()).set(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(SetupActivity.this, "تم تحديث البيانات", Toast.LENGTH_SHORT).show();
+                            finish();
+                        } else {
+                            String error = task.getException().getMessage();
+                            Toast.makeText(SetupActivity.this, error, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+            }else{
+                Toast.makeText(SetupActivity.this, "رقم الهاتف خطأ", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_setup);
+        initialize();
+        loggedIn();
+        loadData();
+
+        setupSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveData();
+            }
+        });
+    }
 
     private void sendToLogin()
     {

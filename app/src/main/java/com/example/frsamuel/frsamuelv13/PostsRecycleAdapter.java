@@ -50,13 +50,17 @@ public class PostsRecycleAdapter extends RecyclerView.Adapter<PostsRecycleAdapte
         return new ViewHolder(view);
     }
 
+    private void setData(int i,final ViewHolder viewHolder){
+
+    }
+
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder viewHolder, int i) {
 
         viewHolder.setIsRecyclable(false);
 
+       // setData(i,viewHolder);
         final String postView = post_List_data.get(i).getPost();
-        final String postID = post_List_data.get(i).postID;
         long millisecond = post_List_data.get(i).getTime().getTime();
         final String dateString = DateFormat.format("MM/dd/yyyy", new Date(millisecond)).toString();
 
@@ -74,6 +78,8 @@ public class PostsRecycleAdapter extends RecyclerView.Adapter<PostsRecycleAdapte
                 }
             }
         });
+        final String postID = post_List_data.get(i).postID;
+
         final String user_id = mAuth.getCurrentUser().getUid();
         if(user_id != null) {
             mFire.collection("Posts/" + postID + "/Likes").document(user_id).addSnapshotListener(new EventListener<DocumentSnapshot>() {

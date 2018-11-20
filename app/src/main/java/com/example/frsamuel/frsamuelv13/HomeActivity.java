@@ -37,91 +37,65 @@ public class HomeActivity extends AppCompatActivity {
     private EditText postText;
     private Button AddPostBtn;
     private RecyclerView postList;
+
     private List<Posts> post_List_data;
     private PostsRecycleAdapter postAdap;
     private Boolean firstPage = true;
     private DocumentSnapshot lastVisible;
     private int counter;
+
     private FirebaseAuth mAuth;
     private FirebaseFirestore firebasefirestor;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
-        counter = 0;
+    private void initialize(){
         mAuth = FirebaseAuth.getInstance();
         firebasefirestor = FirebaseFirestore.getInstance();
+
+        counter = 0;
+        post_List_data = new ArrayList<>();
+        firstPage = true;
+
         postText =  findViewById(R.id.textPost);
         AddPostBtn = findViewById(R.id.addPost);
-        AddPostBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String post = postText.getText().toString();
-                if(!TextUtils.isEmpty(post))
-                {
-                    Map<String,Object> postMap = new HashMap<>();
-                    postMap.put("post", post);
-                    postMap.put("user_id",mAuth.getCurrentUser().getUid());
-                    postMap.put("time", FieldValue.serverTimestamp());
+        postList = findViewById(R.id.Post_view);
 
-                    firebasefirestor.collection("Posts").add(postMap).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentReference> task) {
-                            if(task.isSuccessful())
-                            {
-                                Toast.makeText(HomeActivity.this, "تم", Toast.LENGTH_SHORT).show();
-                                Intent intthis = getIntent();
-                                finish();
-                                startActivity(intthis);
-                            }else{
-                                Toast.makeText(HomeActivity.this, "حدث خطأ ما حاول مرة أخرى", Toast.LENGTH_SHORT).show();
-                            } }
-                    });
-                }else{
-                    Toast.makeText(HomeActivity.this, "اكتب شىء", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
+        postAdap = new PostsRecycleAdapter(post_List_data);
+        postList.setLayoutManager(new LinearLayoutManager(this));
+        postList.setAdapter(postAdap);
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        counter++;
-        if(counter == 1) {
-            firstPage = true;
-            post_List_data = new ArrayList<>();
-            postList = findViewById(R.id.Post_view);
-            postAdap = new PostsRecycleAdapter(post_List_data);
-            postList.setLayoutManager(new LinearLayoutManager(this));
-            postList.setAdapter(postAdap);
-            firstLoad();
+    private void addPost(){
+        String post = postText.getText().toString();
+        if(!TextUtils.isEmpty(post))
+        {
+            Map<String,Object> postMap = new HashMap<>();
+            postMap.put("post", post);
+            postMap.put("user_id",mAuth.getCurrentUser().getUid());
+            postMap.put("time", FieldValue.serverTimestamp());
+
+            firebasefirestor.collection("Posts").add(postMap).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentReference> task) {
+                    if(task.isSuccessful())
+                    {
+                        Toast.makeText(HomeActivity.this, "تم", Toast.LENGTH_SHORT).show();
+                        Intent thisIntent = getIntent();
+                        finish();
+                        startActivity(thisIntent);
+                    }else{
+                        Toast.makeText(HomeActivity.this, "حدث خطأ ما حاول مرة أخرى", Toast.LENGTH_SHORT).show();
+                    } }
+            });
+        }else{
+            Toast.makeText(HomeActivity.this, "اكتب شىء", Toast.LENGTH_SHORT).show();
         }
-        postList.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-
-                Boolean reachedButton = !recyclerView.canScrollVertically(1);
-
-                if(reachedButton){
-                    LoadMorePost();
-                }
-            }
-        });
-        Toast.makeText(this, "on start", Toast.LENGTH_SHORT).show();
-
-
     }
 
-    public void firstLoad(){
+    private void loadData(){
         post_List_data.clear();
 
         Query newQuery = firebasefirestor.collection("Posts")
-                .orderBy("time", Query.Direction.DESCENDING)
-                .limit(5);
+                .orderBy("time", Query.Direction.ASCENDING);
         newQuery.addSnapshotListener(this,new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
@@ -140,53 +114,50 @@ public class HomeActivity extends AppCompatActivity {
                             continue;
                         }
                         if(firstPage){
-
                             post_List_data.add(post);}
                         else{
                             post_List_data.add(0,post);
                         }
                         postAdap.notifyDataSetChanged();
-                    }
                 }
-                firstPage = false;
+                    firstPage = false;
+            }
+        }});
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_home);
+        initialize();
+        loadData();
+        AddPostBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addPost();
             }
         });
+
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
 
-    public void LoadMorePost()
-    {
-        Query newQuery = firebasefirestor.collection("Posts")
-                .orderBy("time", Query.Direction.DESCENDING)
-                .startAfter(lastVisible)
-                .limit(5);
-
-        newQuery.addSnapshotListener(this,new EventListener<QuerySnapshot>() {
+        postList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
 
-                if(!documentSnapshots.isEmpty()){
-                    lastVisible = documentSnapshots.getDocuments().get(documentSnapshots.size() - 1);
-                    for(DocumentChange doc: documentSnapshots.getDocumentChanges()){
-                        if(doc.getType() == DocumentChange.Type.ADDED){
-                            String postID = doc.getDocument().getId();
-                            if(postID.isEmpty()){
-                                continue;
-                            }
-                            if(postID.equals(post_List_data.get(post_List_data.size() - 1).getUser_id())){
-                                continue;
-                            }
-                            Posts post = doc.getDocument().toObject(Posts.class).withID(postID);
-                            if(post.getTime() == null){
-                                continue;
-                            }
-                            post_List_data.add(post);
-                            postAdap.notifyDataSetChanged();
-                        }
-                    }
-                }}
+                Boolean reachedButton = !recyclerView.canScrollVertically(1);
+
+                if(reachedButton){
+
+                }
+            }
         });
+
+
+
     }
-
-
 }

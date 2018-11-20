@@ -27,10 +27,9 @@ public class LoginActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+    private boolean isLogged;
+
+    private void initialize(){
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -39,6 +38,30 @@ public class LoginActivity extends AppCompatActivity {
         LoginBtn =  findViewById(R.id.LoginLogBtn);
         LoginRegBtn = findViewById(R.id.LoginRegBtn);
         LoginProg = findViewById(R.id.LoginProgress);
+
+        isLogged  = false;
+    }
+
+    private void loggedIn(){
+        if(mAuth.getCurrentUser() != null){
+            isLogged = true;
+        }else{
+            isLogged = false;
+        }
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_login);
+
+        initialize();
+
+        loggedIn();
+
+        if(isLogged){
+            sendToMain();
+        }else{
 
         LoginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -53,18 +76,10 @@ public class LoginActivity extends AppCompatActivity {
                 Regmeth();
             }
         });
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null) // if the user is already logged in
-        {
-            sendToMain();
         }
     }
+
+
 
     private void sendToMain()
     {
@@ -80,7 +95,7 @@ public class LoginActivity extends AppCompatActivity {
         if(!TextUtils.isEmpty(loginEmail) && !TextUtils.isEmpty(loginPsw))
         {
             LoginProg.setVisibility(View.VISIBLE);
-            try {
+            if(mAuth != null){
                 mAuth.signInWithEmailAndPassword(loginEmail, loginPsw).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
@@ -92,10 +107,7 @@ public class LoginActivity extends AppCompatActivity {
                             LoginProg.setVisibility(View.INVISIBLE);
                         }
                     }
-                });
-            }catch (Exception e){
-                Toast.makeText(LoginActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
-            }
+                });}
         }else{
             LoginProg.setVisibility(View.INVISIBLE);
             Toast.makeText(LoginActivity.this, "ادخل البيانات", Toast.LENGTH_LONG).show();

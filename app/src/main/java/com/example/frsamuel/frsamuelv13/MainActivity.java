@@ -30,11 +30,10 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseFirestore mFire;
 
     private String admin_id;
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Fabric.with(this, new Crashlytics());
-        setContentView(R.layout.activity_main);
+
+    private boolean isLogged;
+
+    private void initialize(){
 
         mAuth = FirebaseAuth.getInstance();
         mFire = FirebaseFirestore.getInstance();
@@ -42,50 +41,99 @@ public class MainActivity extends AppCompatActivity {
         mainToolbar = findViewById(R.id.mainToolbar);
         setSupportActionBar(mainToolbar);
         getSupportActionBar().setTitle("لنتواصل");
+
         homeBtn = findViewById(R.id.homeBTN);
         inboxBtn = findViewById(R.id.inboxBTN);
         userBtn = findViewById(R.id.userBtn);
         userBtn.setVisibility(View.INVISIBLE);
 
-        if(mAuth.getCurrentUser() == null)
-        {
-            sendToLogin();
-        }
+        isLogged = false;
+    }
 
-        mFire.collection("Verify").document("Admin").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if(task.isSuccessful()){
-                    if(task.getResult().exists()){
-                        admin_id = task.getResult().getString("code");
-                        if(mAuth.getCurrentUser().getUid().equals(admin_id)){
+    private void isAdmin(){
+        if(isLogged && mFire != null) {
+            mFire.collection("Verify").document("Admin").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        if (task.getResult().exists()) {
+                            admin_id = task.getResult().getString("code");
+                            if (mAuth.getCurrentUser().getUid().equals(admin_id)) {
 
-                            userBtn.setVisibility(View.VISIBLE);
+                                userBtn.setVisibility(View.VISIBLE);
+                            }
                         }
                     }
                 }
-            }
-        });
-        homeBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendToHome();
-            }
-        });
+            });
+        }
+    }
 
-        inboxBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "not yet", Toast.LENGTH_LONG).show();
-            }
-        });
+    private void loggedIn(){
+        if(mAuth.getCurrentUser() == null){
+            isLogged = false;
+        }else{
+            isLogged = true;
+        }
+    }
 
-        userBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this,UsersActivity.class));
-            }
-        });
+    private void logOut()
+    {
+        mAuth.signOut();
+        sendToLogin();
+    }
+
+    private void sendToLogin()
+    {
+        Intent LoginIntent = new Intent (MainActivity.this, LoginActivity.class);
+        startActivity(LoginIntent);
+        finish(); //user cannot go back until log in
+    }
+
+    private void sendToHome(){
+        Intent LoginIntent = new Intent (MainActivity.this, HomeActivity.class);
+        startActivity(LoginIntent);
+    }
+
+    private void sendToUser(){
+        Intent UserIntent = new Intent (MainActivity.this, UsersActivity.class);
+        startActivity(UserIntent);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
+        setContentView(R.layout.activity_main);
+
+        initialize();
+        loggedIn();
+
+        if(!isLogged){
+            sendToLogin();
+        }else{
+            isAdmin();
+            homeBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    sendToHome();
+                }
+            });
+
+            inboxBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(MainActivity.this, "not yet", Toast.LENGTH_LONG).show();
+                }
+            });
+
+            userBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    sendToUser();
+                }
+            });
+        }
     }
 
 
@@ -115,21 +163,5 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void logOut()
-    {
-        mAuth.signOut();
-        sendToLogin();
-    }
 
-    private void sendToLogin()
-    {
-        Intent LoginIntent = new Intent (MainActivity.this, LoginActivity.class);
-        startActivity(LoginIntent);
-        finish(); //user cannot go back until log in
-    }
-
-    private void sendToHome(){
-        Intent LoginIntent = new Intent (MainActivity.this, HomeActivity.class);
-        startActivity(LoginIntent);
-    }
 }
